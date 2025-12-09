@@ -31,6 +31,31 @@ class Post(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     category = db.relationship('Category', backref=db.backref('posts', lazy=True))
 
+# Lista de categorías que quieres insertar
+default_categories = ['Deportes', 'Tecnología', 'Política', 'Economía', 'Cultura']
+
+# Crear las tablas si no existen (ya lo tienes)
+with app.app_context():
+    db.create_all()
+
+    # Iterar sobre las categorías predefinidas
+    for cat_name in default_categories:
+        # 1. Intentar encontrar la categoría por nombre
+        existing_category = Category.query.filter_by(name=cat_name).first()
+
+        # 2. Si la categoría NO existe, la creamos e insertamos
+        if existing_category is None:
+            new_category = Category(name=cat_name)
+            db.session.add(new_category)
+            print(f"✅ Categoría '{cat_name}' insertada.")
+        else:
+            # 3. Si ya existe, la ignoramos y mostramos un mensaje (opcional)
+            print(f"⚠️ Categoría '{cat_name}' ya existe, se omite.")
+
+    # 4. Confirmar los cambios en la base de datos (solo si hubo inserciones)
+    db.session.commit()
+    print("✨ Proceso de inserción de categorías completado.")
+
 # Ruta para ver todos los posts
 @app.route('/')
 def index():
